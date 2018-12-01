@@ -1,0 +1,53 @@
+name:                aoc2018
+version:             0.1.0.0
+github:              "Oaz/aoc2018"
+license:             BSD3
+author:              "Olivier Azeau"
+maintainer:          "dev.haskell@azeau.com"
+copyright:           "Olivier Azeau"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Kata
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/Oaz/aoc2018#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- extra
+- unordered-containers
+- MissingH
+
+library:
+  source-dirs: src
+
+executables:
+  aoc2018-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - aoc2018
+
+tests:
+  aoc2018-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - aoc2018
+    - hspec
+    - hspec-discover
