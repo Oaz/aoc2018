@@ -19,5 +19,5 @@ spec = do
 
     describe "common letters" $ do
       it "example" $ commonLetters "abcde fghij klmno pqrst fguij axcye wvxyz" `shouldBe` "fgij"
-      it "submits answer" $ do input <- readFile "test/D02.txt"; commonLetters input `shouldBe` "iosnxmfkpabcjpdywvrtahluy"
+      it "submits answer yolo" $ do input <- readFile "test/D02.txt"; commonLetters input `shouldBe` "iosnxmfkpabcjpdywvrtahluy"
   

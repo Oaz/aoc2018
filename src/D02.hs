@@ -17,8 +17,9 @@ commonLetters :: String -> String
 commonLetters = common . correctIDs . words
   where
     common (xs,ys) = map fst $ filter same $ zip xs ys
-    correctIDs ids = head $ snd $ break differByOne [(x,y) | x <- ids, y <- ids]
-    differByOne (xs,ys) = 1 == (sum $ map distance $ zip xs ys)
+    correctIDs ids = head $ snd $ break differByOne [(x,y) | x <- ids, y <- ids, x /= y]
+    differByOne (xs,ys) = (length $ takeWhile (< 2) $ cumulativeDistance (xs,ys)) == (length xs) + 1
+    cumulativeDistance (xs,ys) = scanl (+) 0 $ map distance $ zip xs ys
     distance x = if same x then 0 else 1
     same (a,b) = a==b
 
