@@ -3,8 +3,6 @@ module D02
     ) where
 
 import Data.List
-import Data.List.Utils
-import qualified Data.HashSet as H
 
 boxesChecksum :: String -> Int
 boxesChecksum = checksum . foldl1 add . map has2or3 . map occurrences . words
