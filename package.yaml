@@ -24,6 +24,7 @@ dependencies:
 - extra
 - unordered-containers
 - MissingH
+- regex-compat
 
 library:
   source-dirs: src
