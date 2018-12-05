@@ -3,18 +3,16 @@ module D05
     ) where
 
 import Data.List
+import Control.Applicative
 
 bestAlteredChainReactionSize :: String -> Int
-bestAlteredChainReactionSize = minimum . map length . imap (map alteredChainReaction ['A'..'Z'])
+bestAlteredChainReactionSize = minimum . map length . (<*>) (map alteredChainReaction ['A'..'Z']) . (:[])
 
-imap :: [a -> b] -> a -> [b]
-imap fs x = map (\f -> f x) fs
-
-alteredChainReaction :: Char -> String -> String
-alteredChainReaction prevent input = reverse $ foldl (unitReaction prevent) [] input
+alteredChainReaction :: Char -> (String -> String)
+alteredChainReaction prevent = reverse . foldl (unitReaction prevent) []
 
 chainReaction :: String -> String
-chainReaction = reverse . foldl (unitReaction ' ') []
+chainReaction = alteredChainReaction ' '
 
 unitReaction :: Char -> String -> Char -> String
 unitReaction p [] y = if (isSameType y p) then [] else [y]
