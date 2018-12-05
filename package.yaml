@@ -25,6 +25,8 @@ dependencies:
 - unordered-containers
 - MissingH
 - regex-compat
+- parsec
+- time
 
 library:
   source-dirs: src
