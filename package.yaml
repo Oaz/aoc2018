@@ -27,6 +27,7 @@ dependencies:
 - regex-compat
 - parsec
 - time
+- partial-order
 
 library:
   source-dirs: src
