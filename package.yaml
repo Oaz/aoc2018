@@ -29,6 +29,7 @@ dependencies:
 - parsec
 - time
 - partial-order
+- matrix
 
 library:
   source-dirs: src
