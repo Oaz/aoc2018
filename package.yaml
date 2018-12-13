@@ -30,6 +30,7 @@ dependencies:
 - time
 - partial-order
 - matrix
+- hashable
 
 library:
   source-dirs: src
