@@ -8,10 +8,10 @@ spec :: Spec
 spec = do
 
   describe "recipes" $ do
-    it "1st move" $ move 4 (Recipes 0 1 (fromList "37")) `shouldBe` (Recipes 0 1 (fromList "3710"))
-    it "2nd move"  $ move 6 (Recipes 0 1 (fromList "3710")) `shouldBe` (Recipes 4 3 (fromList "371010"))
-    it "3rd move"  $ move 6 (Recipes 4 3 (fromList "371010")) `shouldBe` (Recipes 6 4 (fromList "3710101"))
-    it "4th move"  $ move 6 (Recipes 6 4 (fromList "3710101")) `shouldBe` (Recipes 0 6 (fromList "37101012"))
+    it "1st move" $ move (Recipes 0 1 (fromList "37")) `shouldBe` (Recipes 0 1 (fromList "3710"))
+    it "2nd move"  $ move (Recipes 0 1 (fromList "3710")) `shouldBe` (Recipes 4 3 (fromList "371010"))
+    it "3rd move"  $ move (Recipes 4 3 (fromList "371010")) `shouldBe` (Recipes 6 4 (fromList "3710101"))
+    it "4th move"  $ move (Recipes 6 4 (fromList "3710101")) `shouldBe` (Recipes 0 6 (fromList "37101012"))
 
     it "make 5 recipes"  $ make 5 `shouldBe` "0124515891"
     it "make 9 recipes"  $ make 9 `shouldBe` "5158916779"

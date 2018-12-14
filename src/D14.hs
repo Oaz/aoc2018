@@ -7,7 +7,7 @@ import Data.Sequence
 import Data.Foldable
 import Data.Maybe
 
-data Recipes = Recipes { elf1  :: Int
+data Recipes = Recipes { elf1 :: Int
                        , elf2 :: Int
                        , scores :: Seq Char } deriving (Show, Eq)
 
@@ -18,8 +18,8 @@ sdrop = Data.Sequence.drop
 startRecipes :: Recipes
 startRecipes = Recipes 0 1 (fromList "37")
 
-move :: Int -> Recipes -> Recipes
-move nl (Recipes e1 e2 rs) = Recipes (moveElf e1) (moveElf e2) newScores
+move :: Recipes -> Recipes
+move (Recipes e1 e2 rs) = Recipes (moveElf e1) (moveElf e2) newScores
   where currentScore = fromList $ show $ (score e1)+(score e2)
         newScores = rs >< currentScore
         moveElf e = mod (e + 1 + score e) (len newScores)
@@ -27,11 +27,11 @@ move nl (Recipes e1 e2 rs) = Recipes (moveElf e1) (moveElf e2) newScores
         charAt e = index rs e
 
 make :: Int -> String
-make n = toList $ stake 10 $ sdrop n $ head $ dropWhile ((flip (<) (n+10)) . len) $ map scores $ iterate (move 0) startRecipes
+make n = toList $ stake 10 $ sdrop n $ head $ dropWhile ((flip (<) (n+10)) . len) $ map scores $ iterate move startRecipes
 
 search :: Seq Char -> Int
 search s = (len $ scores stopAt) - searchSize + (fromJust $ index stopAt)
-  where stopAt = head $ dropWhile (not . found) $ iterate (move searchSize) startRecipes
+  where stopAt = head $ dropWhile (not . found) $ iterate move startRecipes
         found r = isJust $ index r
         index (Recipes _ _ xs)
           | (endWith s xs) = Just 1
