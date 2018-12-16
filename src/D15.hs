@@ -1,7 +1,8 @@
 module D15
-    ( Coordinates(..), Warrior(..), Spot(..), Battlefield(..), Round(..)
+    ( Coordinates(..), Warrior(..), Spot(..), Battlefield(..), Round(..), Rules(..)
     , parseInput, mkBattlefield, findWarriors, leeAlgorithm, findEnemy, findWeakest
     , startGame, playRound, hitWarrior, playGame, showBattlefield, showGame
+    , standardHitter, findAttackPower
     ) where
 
 import Data.List
@@ -105,6 +106,7 @@ getWarrior (Warrior warrior) = warrior
 
 {- ########### Battlefield ########### -}
 type Battlefield = M.HashMap Coordinates Spot
+type Hitter = Warrior -> Int -> Int
 
 findWarriors :: Battlefield -> [Coordinates]
 findWarriors bt = sort $ M.keys $ M.filter (not.isPath) bt
@@ -125,9 +127,10 @@ findWeakest bt pMyself = listToMaybe $ sortOn (points.getWarrior.((M.!) bt)) ene
         falseInNothing (Just True) = Just True
         falseInNothing _ = Nothing
 
-hitWarrior :: Coordinates -> (Int -> Int) -> Battlefield -> (Battlefield, Maybe Coordinates)
+hitWarrior :: Coordinates -> Hitter -> Battlefield -> (Battlefield, Maybe Coordinates)
 hitWarrior pWarrior updateHP bt = newBattlefield newWarrior
-  where newWarrior = hit (getWarrior $ bt M.! pWarrior) updateHP :: Maybe Warrior
+  where newWarrior = hit oldWarrior $ updateHP oldWarrior :: Maybe Warrior
+          where oldWarrior = getWarrior $ bt M.! pWarrior :: Warrior
         newBattlefield Nothing = (M.insert pWarrior Path $ M.delete pWarrior bt,Just pWarrior) :: (Battlefield, Maybe Coordinates)
         newBattlefield (Just warrior) = (M.insert pWarrior (Warrior warrior) $ M.delete pWarrior bt,Nothing) :: (Battlefield, Maybe Coordinates)
 
@@ -144,11 +147,16 @@ data Round = Round { roundID :: Int
                    , wasFightingInPreviousTurn :: Bool
                    , warriors :: [Coordinates] } deriving (Show, Eq)
 
+data Rules = Rules { hitter :: Hitter }
+
+standardHitter :: Hitter
+standardHitter _ = (+) (-3)
+
 startGame :: Battlefield -> Round
 startGame bt = Round 0 bt False $ findWarriors bt
 
-playTurn :: Round -> Round
-playTurn (Round n battlefield _ (pWarrior:remainingWarriorsInRound)) = Round n newBattleField fightJustOccured newRemainingWarriorsInRound
+playTurn :: Rules -> Round -> Round
+playTurn (Rules hitter) (Round n battlefield _ (pWarrior:remainingWarriorsInRound)) = Round n newBattleField fightJustOccured newRemainingWarriorsInRound
   where currentWarrior = M.lookup pWarrior battlefield
         -- moving
         moving newPos = (M.insert newPos $ fromJust currentWarrior)
@@ -161,7 +169,7 @@ playTurn (Round n battlefield _ (pWarrior:remainingWarriorsInRound)) = Round n n
         (changeBtWithMove,attackCoordinates) = warriorTurn $ findEnemy battlefield pWarrior :: (Battlefield -> Battlefield,Coordinates)
         -- attacking
         warriorAttack Nothing = (\x -> (x,Nothing),False)  :: (Battlefield -> (Battlefield,Maybe Coordinates),Bool)
-        warriorAttack (Just enemyPos) = (hitWarrior enemyPos (flip (-) 3),True) :: (Battlefield -> (Battlefield,Maybe Coordinates),Bool)
+        warriorAttack (Just enemyPos) = (hitWarrior enemyPos hitter,True) :: (Battlefield -> (Battlefield,Maybe Coordinates),Bool)
         warriorHits p bt = (newBt, isFighting, pDeadWarrior) :: (Battlefield,Bool,Maybe Coordinates)
           where (changeBtWithAttack,isFighting) = warriorAttack $ findWeakest bt p :: (Battlefield -> (Battlefield,Maybe Coordinates),Bool)
                 (newBt, pDeadWarrior) = changeBtWithAttack bt ::(Battlefield,Maybe Coordinates)
@@ -169,22 +177,48 @@ playTurn (Round n battlefield _ (pWarrior:remainingWarriorsInRound)) = Round n n
         (newBattleField,fightJustOccured,pDeadWarrior) = (warriorHits $ attackCoordinates) $ changeBtWithMove battlefield :: (Battlefield,Bool,Maybe Coordinates)
         newRemainingWarriorsInRound = remainingWarriorsInRound \\ (maybeToList pDeadWarrior) -- dead warrior won't play even if did not play in yet in round
          
-playRound :: Round -> Round
-playRound (Round n bt sf []) = Round (n+1) bt sf $ findWarriors bt
-playRound r = playRound $ playTurn r
+playRound :: Rules -> Round -> Round
+playRound rules (Round n bt sf []) = Round (n+1) bt sf $ findWarriors bt
+playRound rules r = playRound rules $ playTurn rules r
 
-playGame :: String -> (Int,Int,Int)
-playGame s = (rid, sumOfScores, rid*sumOfScores)
-  where Round lastRoundID bt _ pRemainingWarriors = head $ dropWhile (not.isLastRound) $ runGame s
-        rid = lastRoundID-1
+type Outcome = (Int,Int,Int)
+
+playGame :: Rules -> String -> Outcome
+playGame rules s = outcome $ head $ dropWhile (not.isLastRound) $ runGame rules s
+
+outcome :: Round -> Outcome
+outcome (Round lastRoundID bt _ pRemainingWarriors) = (rid, sumOfScores, rid*sumOfScores)
+  where rid = lastRoundID-1
         sumOfScores = sum $ map (points.getWarrior.((M.!) bt)) pRemainingWarriors
 
-runGame :: String -> [Round]
-runGame s = iterate playRound $ startGame $ mkBattlefield 200 $ parseInput s
+runGame :: Rules -> String -> [Round]
+runGame rules = iterate (playRound rules) . initGame
+
+initGame :: String -> Round
+initGame = startGame . mkBattlefield 200 . parseInput
 
 isLastRound :: Round -> Bool
 isLastRound (Round _ b sf _) = (isGameOver b) && (not sf)
             
+{- ########### find elves attack power ########### -}
+
+findAttackPower :: String -> (Int,Outcome)
+findAttackPower s = (minimalAttackPower, outcome $ lastRound minimalAttackPower)
+  where initialRound = initGame s :: Round
+        nbOfElves = countElves initialRound :: Int
+        isElf (Elf _) = 1 :: Int
+        isElf _ = 0       :: Int
+        isElfAt bt p = isElf $ getWarrior $ (bt M.! p) :: Int
+        countElves (Round _ bt _ pWarriors) = sum $ map (isElfAt bt) pWarriors :: Int
+        lastRound n = head $ dropWhile (not.isLastRound) $ runGame (Rules (customHitter n)) s :: Round
+        hasDeadElves n = (countElves initialRound) > (countElves $ lastRound n) :: Bool
+        minimalAttackPower = head $ dropWhile hasDeadElves [4..]
+        
+
+customHitter :: Int -> Hitter
+customHitter n (Goblin _) = flip (-) n
+customHitter _ w = standardHitter w
+
 {- ########### factories ########### -}
 parseInput :: String -> [(Coordinates,Char)]
 parseInput = concatMap parseRow . zip [0..] . lines
@@ -214,9 +248,9 @@ showBattlefield bt = unlines $ map showRow [ r | r <- [0..(1 + (maximum $ map y 
 showRound :: Round -> String
 showRound (Round n bt _ _) = (show n) ++ "\n" ++ (showBattlefield bt)
 
-showGame :: String -> String
-showGame s = unlines $ map showRound (initial:followup)
-  where rounds = runGame s
+showGame :: Rules -> String -> String
+showGame rules s = unlines $ map showRound (initial:followup)
+  where rounds = runGame rules s
         initial = head rounds :: Round
         followup = map fst $ zip (tail rounds) (takeWhile (not.isLastRound) rounds) :: [Round]
 
