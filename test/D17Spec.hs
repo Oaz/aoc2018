@@ -2,9 +2,6 @@ module D17Spec (spec) where
 
 import Test.Hspec
 import D17
-import Data.List
-import qualified Data.HashMap.Strict as M
-import Data.Ord
 
 spec :: Spec
 spec = do

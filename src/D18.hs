@@ -3,7 +3,6 @@ module D18
     , mkArea, changeArea, processArea, areaValue, countVicinity, findCycle, guessAreaValue
     ) where
 
-import Data.List
 import Data.Matrix
 
 {- ########### Acres ########### -}
@@ -51,13 +50,13 @@ type Vicinity = (Counting,Counting)
 
 nextAcre :: Acre -> Vicinity -> Acre
 nextAcre Glade (AtLeastThree,_) = Trees 
-nextAcre Glade (_,_) = Glade 
+nextAcre Glade _ = Glade 
 nextAcre Trees (_,AtLeastThree) = Lumber 
-nextAcre Trees (_,_) = Trees 
+nextAcre Trees _ = Trees 
 nextAcre Lumber (Zero,_) = Glade 
 nextAcre Lumber (_,Zero) = Glade 
-nextAcre Lumber (_,_) = Lumber 
-nextAcre Void (_,_) = Void 
+nextAcre Lumber _ = Lumber 
+nextAcre Void _ = Void 
 
 countVicinity :: Area -> Coordinates -> Vicinity
 countVicinity ar (x,y)

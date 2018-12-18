@@ -5,13 +5,10 @@ module D17
     , showUnderground, countGroundwater
     ) where
 
---import Data.List
---import Data.Maybe
 import qualified Data.HashMap.Strict as M
 import Data.Hashable
 import Data.Ord
 import Text.Regex
-import Control.Exception
   
 {- ########### Going through geological areas ########### -}
 data Geology = Sand | Clay | Groundwater | Flood | Spring deriving (Show, Eq)
@@ -108,8 +105,7 @@ addWater (Water pos (Stop x)) u@(Underground _ _ _ g) = u { geology = M.insert p
 
 fillRow :: Water -> Underground -> Underground
 fillRow (Water pos@(_:+y) (StopAndFill v)) u@(Underground _ _ _ g) = u { geology = foldr addGeology g toFill }
-  where findLimit d = head $ dropWhile (((==)Sand).(geologyAt u)) $ map checkLimit $ iterate ((+)d) pos :: Coordinates
-        checkLimit p = assert (isInBoundary u p) p
+  where findLimit d = head $ dropWhile (((==)Sand).(geologyAt u)) $ iterate ((+)d) pos :: Coordinates
         (l:+_,r:+_) = (findLimit $ (-1):+0, findLimit $ 1:+0)
         toFill = [x:+y | x<-[(l+1)..(r-1)]]
         addGeology p = M.insert p v
