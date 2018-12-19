@@ -65,7 +65,8 @@ spec = do
 
     it "part 2" $ do
       input <- readFile "test/D18.txt";
-      guessAreaValue (mkArea input) 1000 1000000000 `shouldBe` (605,333,201465)
-  
-  
+      guessAreaValue (mkArea input) 1000000000 `shouldBe` (605,333,201465)
+
+                
+        
 

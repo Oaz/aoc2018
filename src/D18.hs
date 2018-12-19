@@ -1,6 +1,6 @@
 module D18
     ( Coordinates(..), Acre(..), Area(..), Counting(..)
-    , mkArea, changeArea, processArea, areaValue, countVicinity, findCycle, guessAreaValue
+    , mkArea, changeArea, processArea, areaValue, countVicinity, guessAreaValue
     ) where
 
 import Data.Matrix
@@ -82,11 +82,15 @@ areaValue :: Area -> (Int,Int,Int)
 areaValue ar = (t,l,t*l)
   where (t,l) = countAcres $ toList ar
 
-findCycle :: Area -> Int
-findCycle ar = fst $ head $ dropWhile (((/=)ar).snd) $ zip [0..] $ drop 1 $ iterate changeArea ar
-
-guessAreaValue :: Area -> Int -> Int -> (Int,Int,Int)
-guessAreaValue ar forwardPeek stageToGuess = areaValue equivalentArea
-  where base = processArea forwardPeek ar
-        period = findCycle base
-        equivalentArea = processArea (mod (stageToGuess-forwardPeek) period) base
+guessAreaValue :: Area -> Int -> (Int,Int,Int)
+guessAreaValue ar stageToGuess = areaValue equivalentArea
+  where (m,mu) = floydDetection ar changeArea 
+        equivalentArea = processArea (mod (stageToGuess-m) mu) $ processArea m ar
+                
+floydDetection :: (Eq a) => a -> (a -> a) -> (Int,Int)
+floydDetection x0 f = (m,mu)
+  where g (n,(x,y)) = (n+1, (f x, f $ f y))
+        equals (_,(x,y)) = x == y
+        findSame x = head $ dropWhile (not.equals) $ drop 1 $ iterate g (0,(x,x))
+        (m,(x1,_)) = findSame x0
+        (mu,_) = findSame x1
