@@ -32,6 +32,7 @@ dependencies:
 - matrix
 - hashable
 - vector
+- data-memocombinators
 
 library:
   source-dirs: src
