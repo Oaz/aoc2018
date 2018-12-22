@@ -36,5 +36,5 @@ regionType :: Cave -> Coordinate -> Int
 regionType c p = mod (erosionLevel c p) 3
 
 riskLevel :: Cave -> Int
-riskLevel c@(Cave _ p@(xt,yt) il) = s - regionType c p
-  where s = sum $ map (regionType c) [(x,y) | x<-[0..xt], y<-[0..yt]]
+riskLevel c@(Cave _ p il) = s - regionType c p
+  where s = sum $ map (regionType c) $ rangeTo p
