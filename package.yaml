@@ -33,6 +33,7 @@ dependencies:
 - hashable
 - vector
 - data-memocombinators
+- fgl
 
 library:
   source-dirs: src
