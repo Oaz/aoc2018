@@ -19,10 +19,12 @@ startRecipes :: Recipes
 startRecipes = Recipes 0 1 (fromList "37")
 
 move :: Recipes -> Recipes
-move (Recipes e1 e2 rs) = Recipes (moveElf e1) (moveElf e2) newScores
-  where currentScore = fromList $ show $ (score e1)+(score e2)
+move (Recipes e1 e2 rs) = Recipes (moveElf e1 s1) (moveElf e2 s2) newScores
+  where currentScore = fromList $ show $ s1+s2
         newScores = rs >< currentScore
-        moveElf e = mod (e + 1 + score e) (len newScores)
+        moveElf e s = mod (e + 1 + s) (len newScores)
+        s1 = score e1
+        s2 = score e2
         score e = (ord $ charAt e) - (ord '0')
         charAt e = index rs e
 
